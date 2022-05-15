@@ -1,6 +1,9 @@
-const photos = require("../photos-database.js");
-
 module.exports = {
-  totalPhotos: () => photos.length,
-  allPhotos: () => photos,
-}
+  totalPhotos: (_parent, args, { db }) =>
+    db.collection("photos").estimatedDocumentCount(),
+  allPhotos: (_parent, args, { db }) =>
+    db.collection("photos").find().toArray(),
+  totalUsers: (_parent, args, { db }) =>
+    db.collection("users").estimatedDocumentCount(),
+  allUsers: (_parent, args, { db }) => db.collection("users").find().toArray(),
+};
