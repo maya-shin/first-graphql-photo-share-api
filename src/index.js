@@ -1,8 +1,10 @@
-const { ApolloServer } = require("apollo-server");
+const { ApolloServer } = require("apollo-server-express");
+const express = require("express");
 const users = require("./users-database.js");
 const photos = require("./photos-database.js");
 const tags = require("./tags-database.js");
 const { GraphQLScalarType } = require("graphql");
+const exp = require("constants");
 
 const typeDefs = `
   enum PhotoCategory {
@@ -64,7 +66,7 @@ const resolvers = {
         id: ++_id,
         url: "inmutation", // 返却時のurlの値はPhotoリゾルバで上書きされる
         ...args.input,
-        created: new Date()
+        created: new Date(),
       };
       photos.push(newPhoto); // push { id: 1, url: 'inmutation', name: 'shiya', description: 'mine' }
       return newPhoto;
@@ -88,28 +90,38 @@ const resolvers = {
     postedPhotos: (parent) => {
       return photos.filter((p) => p.githubUser === parent.githubLogin);
     },
-    inPhotos: (parent) =>{
-      console.log(parent.id)
+    inPhotos: (parent) => {
+      console.log(parent.id);
       return tags
         .filter((tag) => tag.userID === parent.githubLogin) //対象のユーザーが関係しているタグの配列を返す
         .map((tag) => tag.photoID) // タグの配列を写真IDの配列に変換する
-        .map((photoID) => photos.find((p) => p.id === photoID)) // 写真IDの配列を写真オブジェクトの配列に変換する
-      }
+        .map((photoID) => photos.find((p) => p.id === photoID)); // 写真IDの配列を写真オブジェクトの配列に変換する
+    },
   },
   DateTime: new GraphQLScalarType({
     name: `DateTime`,
     description: `A valid date time value`,
-    parseValue: value => new Date(value),
-    serialize: value => new Date(value).toISOString(),
-    parseLiteral: ast => ast.value
-  })
+    parseValue: (value) => new Date(value),
+    serialize: (value) => new Date(value).toISOString(),
+    parseLiteral: (ast) => ast.value,
+  }),
 };
 
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-});
+const app = express();
+app.get("/", (req, res) => res.end("Welcome to the PhotoShare API"));
 
-server
-  .listen()
-  .then(({ url }) => console.log(`GraphQL Server runninng on ${url}`));
+const startServer = async () => {
+  const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+  });
+  await server.start();
+  server.applyMiddleware({ app });
+}
+startServer();
+
+app.listen({ port: 4000 }, () =>
+  console.log(
+    `GraphQL Server running @ http://localhost:4000`
+  )
+);
