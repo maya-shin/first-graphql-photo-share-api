@@ -1,3 +1,5 @@
+const expressPlayground =
+  require("graphql-playground-middleware-express").default;
 const { ApolloServer } = require("apollo-server-express");
 const express = require("express");
 const users = require("./users-database.js");
@@ -109,6 +111,7 @@ const resolvers = {
 
 const app = express();
 app.get("/", (req, res) => res.end("Welcome to the PhotoShare API"));
+app.get("/playground", expressPlayground({ endpoint: "/graphql" }));
 
 const startServer = async () => {
   const server = new ApolloServer({
@@ -117,11 +120,9 @@ const startServer = async () => {
   });
   await server.start();
   server.applyMiddleware({ app });
-}
+};
 startServer();
 
 app.listen({ port: 4000 }, () =>
-  console.log(
-    `GraphQL Server running @ http://localhost:4000`
-  )
+  console.log(`GraphQL Server running @ http://localhost:4000`)
 );
