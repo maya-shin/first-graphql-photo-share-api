@@ -76,7 +76,7 @@ const resolvers = {
       return `http://yoursite.com/img/${parent.id}.jpg`; // 返却時にurlを左記値にする
     },
     postedBy: (parent) => {
-      return users.find((u) => u.githubLogin == parent.githubUser);
+      return users.find((u) => u.githubLogin === parent.githubUser);
     },
     taggedUsers: (parent) =>
       tags
